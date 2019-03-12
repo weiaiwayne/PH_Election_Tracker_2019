@@ -1,0 +1,368 @@
+---
+title: "The Twitter Pulse of 2019 Philippine General Election"
+author: "[curiositybits.cc](https://curiositybits.cc)"
+output: 
+  flexdashboard::flex_dashboard:
+    #storyboard: true
+    orientation: rows
+    vertical_layout: fill
+    #vertical_layout: scroll
+    #storyboard: true
+    social: menu
+    #theme: simplex
+    theme: united
+    #source_code: embed
+runtime: shiny
+---
+
+```{r global, include=FALSE}
+# load data in 'global' chunk so it can be shared by all users of the dashboard
+library(shiny)
+library(highcharter)
+library(shinythemes)
+library(ggplot2)
+library(ggthemes)
+#library(plotly)
+library(quanteda)
+library(textnets)
+#library(quanteda)
+
+#load in data
+data <- read.csv("bycandidate_date.csv", header = TRUE)
+data$date <- as.Date(data$created_date_label)
+
+df <- read.csv("df.csv")
+df$content <- as.character(df$content)
+df$from_user_screen_name <- tolower(df$from_user_screen_name)
+
+t1 <- read.csv("t1.csv", header = TRUE)
+t2 <- read.csv("t2.csv", header = TRUE)
+
+thm <- 
+  hc_theme(
+    colors = c("#1a6ecc", "#434348", "#90ed7d"),
+    chart = list(
+      backgroundColor = "transparent",
+      style = list(fontFamily = "Source Sans Pro")
+    ),
+    xAxis = list(
+      gridLineWidth = 1
+    )
+  )
+```
+
+Inputs {.sidebar}
+====================================================================
+
+```{r}
+
+h5("Data updated:", Sys.Date())
+selectInput("type", label = (helpText(h5(strong("Choose an indicator")))),
+            choices = list("Average virality" = "avg_rt",
+                           "Average favorability" = "avg_fav",
+                           "# of tweets" = "tweet_count",
+                           "# of hashtags" = "hashtagcount",
+                           "# of users mentioned by candidate" = "mentioncount",
+                           "# of video/images used by candidate" = "multimediacount"),
+            selected = "avg_rt"
+)
+
+checkboxGroupInput("account", 
+                   label = (helpText(h5("Choose candidate"))),
+                    choices = list("Sonny Angara " = "sonnyangara", 
+                    "Bam Aquino (LP)" = "bamaquino",
+                    "Nancy Binay (UNA)" = "senatorbinay",
+                    "Pia Cayetano (NP)" = "piacayetano",
+                    "Bato dela Rosa (PDPLBN)" = "officialgenbato", 
+                    "Chel Diokno (LP)" = "cheldiokno", 
+                    "JV Ejercito (NPC)" = "jvejercito",
+                    "Juan Ponce Enrile (PMP)" = "sjpenrile",
+                    "Jinggoy Estrada (PMP)" = "jinggoyestrada1",
+                    "Bong Go (PDPLBN)" = "sap_bong_go",
+                    "Samira Gutoc (LP)" = "samiragutoc",
+                    "Pilo Hilbay (AKSYON)" = "fthilbay",
+                    "Jiggy Manicad (IND)" = "jiggymanicad",
+                    "Imee Marcos (NP)" = "manangimee",
+                    "Sergio Osmeña (IND)" = "sergeosmena",
+                    "Koko Pimentel(PDPLBN)" = "senkokopimentel",
+                    "Grace Poe (IND)" = "sengracepoe",
+                    "Ramon Bong Revilla Jr. (LAKAS)" = "bongrevillajrph",
+                    "Mar Roxas (LP)" = "maroxas",
+                    "Lorenzo Reyes Tañada (LP)" = "erintanada",
+                    "Francis Tolentino (PDPLBN)" = "tolentino2019",
+                   "Cynthia Villar (NP)" = "cynthia_villar"),
+                    
+                   selected = list("maroxas",
+                                   "piacayetano","sengracepoe","sonnyangara","bongrevillajrph"))
+
+h5(strong("This app is created by", a("curiositybits.cc", href="https://curiositybits.cc"),"as part of the Reality Check Project."))  
+    
+```
+
+
+Engagement {data-orientation=scroll data-icon="fa-bar-chart"}
+=======================================================================
+
+### 
+###
+
+### **Introducing Engagement Indicators**
+
+Here we quantify various forms of Twitter engagement practice used by the candidates. We also track the effectiveness of their engagement. The analysis below is based on the candidates' **original tweets** (i.e., excluding their retweets of other accounts) since **October 1, 2018**. See the **[About](#section-about)** page for the information about how each indicator is calculated. 
+
+### Row 1 {data-height=110}
+-----------------------------------------------------------------------
+
+```{r}
+#hchart(data[data$from_user_screen_name %in% input$account & data$variable %in% #input$type,],type="area",hcaes(x=day_show,y=value,group=from_user_screen_name),lineWidth=3, #fillOpacity=0.2, color=c("#FFC0Cb","#44AAFF"),marker=list(radius=1))
+
+output$chart <- renderHighchart({
+
+  highchart() %>%
+    hc_add_series(data= data[data$from_user_screen_name %in% input$account & data$variable %in% input$type,],"line", hcaes(x = date, y = value,                                                                 group=from_user_screen_name)) %>%
+hc_xAxis(type = "datetime")
+
+})
+
+highchartOutput('chart')
+
+```
+
+
+Wordcloud {data-orientation=rows data-icon="fa-bar-chart"}
+=======================================================================
+
+### 
+###
+
+### **Introducing the wordcloud**
+
+You can use this wordcloud feature to compare across candidates with regard to frequent terms used in their tweets. It shows up to 200 words per candidate. For better readability, we have removed numbers, symbols, Twitter hashtags and handles, as well as URLs. We have also filtered common [stop words](https://en.wikipedia.org/wiki/Stop_words) in [English](https://gist.github.com/sebleier/554280) and [Tagalog](https://github.com/stopwords-iso/stopwords-tl).
+
+Interested in exploring how the candidates use hashtags in their tweets, visit the **[Hashtags](#section-hashtags)** page.
+
+## Row  {data-height=210}
+
+```{r}
+renderPlot({
+  select <- input$account
+  
+  corpus <- corpus(df[df$from_user_screen_name %in% select,],docid_field = "tweet_id",text_field = "content")
+  
+  tok <- tokens(corpus, remove_punct = TRUE,remove_numbers = TRUE, remove_symbols = TRUE, remove_twitter=TRUE, remove_url=TRUE)
+ 
+  tok <- tokens_select(tok, pattern = stopwords('en'), selection = 'remove')
+  
+  tok <- tokens_select(tok, pattern = stopwords('tl', source = "stopwords-iso"), selection = 'remove')
+  
+  dfm <- dfm(tok)
+  dfm <- dfm_group(dfm, groups = "from_user_screen_name")
+  
+  #set.seed(132)
+  if (length(select)>1) {
+    textplot_wordcloud(dfm, comparison = TRUE,random_color = FALSE, labelcolor = "gray45", labelsize = 2.5, labeloffset = 0, min_size = 0.5, max_size = 4,max_words = 200)
+  }else {
+      textplot_wordcloud(dfm, comparison = FALSE,random_color = FALSE, labelcolor = "gray45", labelsize = 2.5, labeloffset = 0, min_size = 0.5, max_size = 4,max_words = 200)
+  }
+    
+#    )
+    
+
+})
+
+```
+
+Bigrams {data-orientation=rows data-icon="fa-bar-chart"}
+=======================================================================
+
+### 
+###
+
+### **Introducing bigrams**
+
+A *bigram* is a pair of consecutive words. This page shows the 20 most frequent bigrams used in candidates' tweets. For better readability, we have removed numbers, symbols, Twitter hashtags and handles, as well as URLs. We have also filtered common [stop words](https://en.wikipedia.org/wiki/Stop_words) in [English](https://gist.github.com/sebleier/554280) and [Tagalog](https://github.com/stopwords-iso/stopwords-tl).
+
+Interested in exploring how the candidates use hashtags in their tweets, visit the **[Hashtags](#section-hashtags)** page.
+
+## Row 1 {data-height=110}
+
+```{r}
+renderPlot({
+  
+  select <- input$account
+  
+  corpus <- corpus(df[df$from_user_screen_name %in% select,],docid_field = "tweet_id",text_field = "content")
+  
+  tok <- tokens(corpus, remove_punct = TRUE,remove_numbers = TRUE, remove_symbols = TRUE, remove_twitter=TRUE, remove_url=TRUE)
+  
+  tok <- tokens_select(tok, pattern = stopwords('en'), selection = 'remove')
+  
+  tok <- tokens_select(tok, pattern = stopwords('tl', source = "stopwords-iso"), selection = 'remove')
+  
+  tok <- tokens_ngrams(tok, n = 2)
+  
+  dfm <- dfm(tok)
+  dfm <- dfm_group(dfm, groups = "from_user_screen_name")
+  
+  freq <- textstat_frequency(dfm, n = 20, groups = "from_user_screen_name")
+  
+  ggplot(data = freq, aes(x = nrow(freq):1, y = frequency)) +
+    geom_point() +
+    facet_wrap(~ group, scales = "free") +
+    coord_flip() +
+    scale_x_continuous(breaks = nrow(freq):1,
+                       labels = freq$feature) +
+    labs(x = NULL, y = "Relative frequency")+
+    theme_economist(base_size = 8, base_family = "sans",
+                    horizontal = FALSE, dkpanel = FALSE)+ 
+    scale_colour_economist()
+
+})
+    
+```
+
+Hashtags {data-orientation=rows data-icon="fa-bar-chart"}
+=======================================================================
+
+### 
+###
+
+### **Introducing hashtag co-occurrence network**
+
+In a hashtag co-occurrence network, two hashtags are connected when they co-appear in the same tweet. As hashtags are used for signaling distinct issue positions, causes, and campaigns, the hashtag co-occurrence network reveals how different issues and causes converge or diverge in the eyes of the candidates.
+
+The network below is constructed based on the original tweets sent by **the candidates you have selected**. Every time you select or unselect candidate, it will reload and recreate the network. For faster loading, the tool only shows the top 100 hashtags. 
+
+## Row 1 {data-height=110}
+-----------------------------------------------------------------------
+```{r}
+renderPlot({
+  
+  select <- input$account
+  
+  corpus <- corpus(df[df$from_user_screen_name %in% select,],docid_field = "tweet_id",text_field = "content")
+  
+  tok <- tokens(corpus, remove_punct = TRUE,remove_numbers = TRUE, remove_symbols = FALSE, remove_twitter=FALSE, remove_url=TRUE)
+  
+  tok <- tokens_select(tok, pattern = stopwords('en'), selection = 'remove')
+  
+  tok <- tokens_select(tok, pattern = stopwords('tl', source = "stopwords-iso"), selection = 'remove')
+  
+  dfm <- dfm(tok)
+  
+  dfm <- dfm_select(dfm, pattern = ("#*"))
+  
+  tweets_fcm <- fcm(dfm) 
+  
+  feat <- names(topfeatures(tweets_fcm, 100))
+  size <- log(colSums(dfm_select(dfm, feat)))
+  fcm_select <- fcm_select(tweets_fcm, pattern = feat)
+  set.seed(144)
+  textplot_network(fcm_select, min_freq = 0.8,vertex_size = size / max(size) * 3)
+  
+
+})
+
+```
+
+
+Bridges {data-orientation=rows data-icon="fa-bar-chart"}
+=======================================================================
+###
+###
+
+### **Introducing cultural/issue bridges**
+
+Below shows two cultural/issue networks of candidates. In the first network, candidates are connected to one and another based on the amount of overlap **in the words (including hashtags and emojis) they used in their original tweets**. In the second network, candidates are connected based on the amount of overlap **in the use of hashtags**. 
+
+We used [a community detection algorithm](https://github.com/cbail/textnets) to calculate and rank each candidate's “cultural betweenness." Candidates with higher cultural betweenness (displayed in a bigger node) are those who address and combine conversational themes, issues, and causes that are seldom discussed together.
+
+**Why does it matter?**
+The idea of *cultural betweenness* is an established sociological concept but has only recently been used as [an analytical indicator](https://github.com/cbail/textnets). [A 2016 study](https://www.pnas.org/content/pnas/113/42/11823.full.pdf?with-ds=yes) shows that advocacy organizations which create substantial cultural bridges are significantly more effective in attracting online attention and actions. It remains to be seen whether cultural betweenness can translate into votes. 
+
+**Caveat**
+* This is an experimental feature built on a new algorithm developed by [Bail (2016)](https://www.pnas.org/content/pnas/113/42/11823.full.pdf?with-ds=yes) and his team. We are still testing the validity of this algorithm when applied to an electoral context.  
+
+Row {.tabset .tabset-fade}
+-------------------------------------
+
+### Based on overlap in word use
+Based on common use of words, including hashtags and emojs
+
+
+```{r}
+
+library(textnets)
+t1 <- t1[,c("from_user_screen_name","lemma","count")]
+t1 <- t1[!is.na(t1$from_user_screen_name),]
+t1$from_user_screen_name <- trimws(t1$from_user_screen_name)
+t1$lemma <- trimws(t1$lemma)
+
+
+renderPlot({
+  n1 <- CreateTextnet(t1)
+  VisTextNet(n1, label_degree_cut = 0, betweenness=TRUE)
+  
+
+
+})
+
+
+```
+
+
+### Based on overlap in hashtag use
+Based on common use of hashtags
+
+```{r}
+
+library(textnets)
+t2 <- t2[,c("from_user_screen_name","lemma","count")]
+t2 <- t2[!is.na(t1$from_user_screen_name),]
+t2$from_user_screen_name <- trimws(t2$from_user_screen_name)
+t2$lemma <- trimws(t2$lemma)
+
+
+renderPlot({
+  n2 <- CreateTextnet(t2)
+  VisTextNet(n2, label_degree_cut = 0, betweenness=TRUE)
+
+})
+
+
+```
+
+
+About
+=======================================================================
+###
+
+This app is a product of the Reality Check project funded by [ANU](http://www.anu.edu.au/). Our research team built this visualization app using the [R Shiny framework](https://www.rstudio.com/products/shiny/) and tweets collected through the [Twitter API](https://developer.twitter.com/). This app is designed with the purpose of increasing electoral transparency in the age of disinformation and polarization. The app allows users to explore various Twitter engagement practices used by the candidates in the 2019 Philippine general election. 
+
+This app includes five features:
+
+The **Engagement** feature quantifies various forms of Twitter engagement practice used by the candidates, as well as the effectiveness of their engagement. We provide the tracking of six indicators:
+
+* *Average virality*: the average retweet count of original tweets sent on a given day, after factoring in how long the tweets has been posted.
+* *Average favorability*: the average favorite count of original tweets sent on a given day, after factoring in how long the tweets has been posted.
+* *# of tweets*: the number of original tweets sent on a given day
+* *# of hashtags*: the number of hashtags used in original tweets sent on a given day
+* *# of users mentioned by candidate*: the number of Twitter users tagged by the candidates in their original tweets sent on a given day
+* *# of video/images used by candidate*: the number of images/videos used by the candidates in their original tweets sent on a given day
+
+The **Wordcloud** and **Bigrams** features allow you to compare across candidates with regard to frequent terms (single words and bigrams) used in their tweets. 
+
+The **Hashtags** feature shows how different issues and causes converge or diverge based on co-occurrence of hashtags in the candidates' tweets. 
+
+The **Bridges** feature is built on a new algorithm developed by [Bail (2016)](https://www.pnas.org/content/pnas/113/42/11823.full.pdf?with-ds=yes) and his team. The algorithm identifies *cultural/issue bridges* based on the amount of overlap in the use of words and hashtags by any pair of candidates. *Cultural/issue bridges* are candidates who address and combine conversational themes, issues, and causes that are seldom discussed together.  
+
+**Updates**
+We update our database at least twice a week. You will note the date of update on the top of the sidebar. 
+
+We plan to roll out new features soon based on tweets that contain key campaign hashtags.
+
+**Open-source**
+We built this app based on many open-source R packages, such as [flexdashboard](https://rmarkdown.rstudio.com/flexdashboard/), [highcharter](http://jkunst.com/highcharter/), [quanteda](https://quanteda.io/), [textnets](https://github.com/cbail/textnets). We embrace open-source because it democratizes data and algorithms to keep governance transparent and politicians accountable. With this vision, we have published [the source code of this project](https://github.com/weiaiwayne/PH_Election_Tracker_2019). If you are a developer, feel free to adapt the code for your own tracking apps. 
+
+
+
