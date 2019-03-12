@@ -1,0 +1,196 @@
+---
+title: "Twitter Conversation Networks in the 2019 Philippine General Election"
+author: "[curiositybits.cc](https://curiositybits.cc)"
+output: 
+  flexdashboard::flex_dashboard:
+    storyboard: true
+    social: menu
+    theme: united
+    source: embed
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(shiny)
+library(flexdashboard)
+library(igraph)
+library(visNetwork)
+
+load(file = "mydata.rda")
+```
+
+### Influencers in the #OtsoDiretso network based on retweeting 
+
+```{r}
+h5("This #OtsoDiretso network consists of users who were retweeted at least once.")
+h5("There are",vcount(rt_OD_in),"users in the #OtsoDiretso network who created",ecount(rt_OD_in),"connections based on retweeting." )
+
+h5("On average, users in the network were retweeted", mean(V(rt_OD_in)$indegree), "times by other users in the same network.")
+
+h5("Kamada-Kawai layout algorithm is used for visualizing the network")
+h5("Data updated:", Sys.Date())
+
+visIgraph(rt_OD_in,idToLabel = TRUE,layout = "layout_with_kk") %>%
+  visOptions(highlightNearest = TRUE, nodesIdSelection = TRUE) 
+
+```
+
+
+***
+**How to interpret the graph?**
+
+In this network, a pair of users represents a retweeting relationship. That is, two users are connected to one and another if one retweets or is retweeted by the other. Using *in-degree centrality* measure, we are able to identify *influencers* in this network. Here, influencers  refer to users who are more retweeted than others. They are represented by bigger nodes.
+
+### Mobilizers in the #OtsoDiretso network based on retweeting
+
+```{r}
+h5("This network consists of users who retweeted other users using the hashtag #OtsoDiretso at least once.")
+h5("There are",vcount(rt_OD_out),"users in the #OtsoDiretso network who created",ecount(rt_OD_out),"connections based on retweeting." )
+
+h5("On average, users in this network retweeted other users in the same network", mean(V(rt_OD_out)$outdegree), "times.")
+h5("Kamada-Kawai layout algorithm is used for visualizing the network")
+h5("Data updated:", Sys.Date())
+
+visIgraph(rt_OD_out,idToLabel = TRUE,layout = "layout_with_kk") %>%
+  visOptions(highlightNearest = TRUE, nodesIdSelection = TRUE) 
+
+```
+
+***
+
+**How to interpret the graph?**
+
+In this network, a pair of users represents a retweeting relationship. That is, two users are connected to one and another if one retweets or is retweeted by the other. Using *out-degree centrality* measure, we are able to identify *mobilizers* in this network. Here, mobilizers  refer to users who more often retweet other users in the network. Such users are represented by bigger nodes.
+
+### Influencers in the #OtsoDiretso network based on Twitter mentions
+
+```{r}
+h5("This #OtsoDiretso network consists of users who were at least mentioned once by other users.")
+
+h5("There are",vcount(mt_OD_in),"users in the #OtsoDiretso network who created",ecount(mt_OD_in),"connections based on mentions." )
+
+h5("On average, users in the network were mentioned or replied to", mean(V(mt_OD_in)$indegree), "times by other users in the same network.")
+
+h5("Kamada-Kawai layout algorithm is used for visualizing the network")
+h5("Data updated:", Sys.Date())
+
+visIgraph(mt_OD_in,idToLabel = TRUE,layout = "layout_with_kk") %>%
+  visOptions(highlightNearest = TRUE, nodesIdSelection = TRUE) 
+
+```
+
+***
+
+**How to interpret the graph?**
+
+In this network, a pair of users represents a Twitter mention relationship. That is, two users are connected to one and another if one mentions or is mentioned by the other. Using *in-degree centrality* measure, we are able to identify *influencers* in this network. Here, influencers  refer to users who are more mentioned than others. They are represented by bigger nodes.
+
+### Mobilizers in the #OtsoDiretso network based on Twitter mentions
+
+```{r}
+h5("This network consists of users who mentioned other users using the hashtag #OtsoDiretso at least once.")
+h5("There are",vcount(mt_OD_out),"users in the #OtsoDiretso network who created",ecount(mt_OD_out),"connections based on mentions." )
+
+h5("On average, users in this network mentioned other users in the same network", mean(V(mt_OD_out)$outdegree), "times.")
+h5("Kamada-Kawai layout algorithm is used for visualizing the network")
+h5("Data updated:", Sys.Date())
+
+visIgraph(mt_OD_out,idToLabel = TRUE,layout = "layout_with_kk") %>%
+  visOptions(highlightNearest = TRUE, nodesIdSelection = TRUE) 
+
+```
+
+***
+
+**How to interpret the graph?**
+
+In this network, a pair of users represents a mention relationship. That is, two users are connected to one and another if one mentions or is mentioned by the other. Using *out-degree centrality* measure, we are able to identify *mobilizers* in this network. Here, mobilizers  refer to users who more often mention other users in the network. Such users are represented by bigger nodes.
+
+### Influencers in the #Imeesolusyon network based on retweeting 
+
+```{r}
+h5("This #Imeesolusyon network consists of users who were retweeted at least once.")
+h5("There are",vcount(rt_IM_in),"users in the #Imeesolusyon network who created",ecount(rt_IM_in),"connections based on retweeting." )
+
+h5("On average, users in the network were retweeted", mean(V(rt_IM_in)$indegree), "times by other users in the same network.")
+
+h5("Kamada-Kawai layout algorithm is used for visualizing the network")
+h5("Data updated:", Sys.Date())
+
+visIgraph(rt_IM_in,idToLabel = TRUE,layout = "layout_with_kk") %>%
+  visOptions(highlightNearest = TRUE, nodesIdSelection = TRUE) 
+
+```
+
+
+***
+**How to interpret the graph?**
+
+In this network, a pair of users represents a retweeting relationship. That is, two users are connected to one and another if one retweets or is retweeted by the other. Using *in-degree centrality* measure, we are able to identify *influencers* in this network. Here, influencers  refer to users who are more retweeted than others. They are represented by bigger nodes.
+
+### Mobilizers in the #Imeesolusyon network based on retweeting
+
+```{r}
+h5("This network consists of users who retweeted other users using the hashtag #Imeesolusyon at least once.")
+h5("There are",vcount(rt_IM_out),"users in the #Imeesolusyon network who created",ecount(rt_IM_out),"connections based on retweeting." )
+
+h5("On average, users in this network retweeted other users in the same network", mean(V(rt_IM_out)$outdegree), "times.")
+h5("Kamada-Kawai layout algorithm is used for visualizing the network")
+h5("Data updated:", Sys.Date())
+
+visIgraph(rt_IM_out,idToLabel = TRUE,layout = "layout_with_kk") %>%
+  visOptions(highlightNearest = TRUE, nodesIdSelection = TRUE) 
+
+```
+
+***
+
+**How to interpret the graph?**
+
+In this network, a pair of users represents a retweeting relationship. That is, two users are connected to one and another if one retweets or is retweeted by the other. Using *out-degree centrality* measure, we are able to identify *mobilizers* in this network. Here, mobilizers  refer to users who more often retweet other users in the network. Such users are represented by bigger nodes.
+
+### Influencers in the #Imeesolusyon network based on Twitter mentions
+
+```{r}
+h5("This #Imeesolusyon network consists of users who were at least mentioned once by other users.")
+
+h5("There are",vcount(mt_IM_in),"users in the #Imeesolusyon network who created",ecount(mt_IM_in),"connections based on mentions." )
+
+h5("On average, users in the network were mentioned or replied to", mean(V(mt_IM_in)$indegree), "times by other users in the same network.")
+
+h5("Kamada-Kawai layout algorithm is used for visualizing the network")
+h5("Data updated:", Sys.Date())
+
+visIgraph(mt_IM_in,idToLabel = TRUE,layout = "layout_with_kk") %>%
+  visOptions(highlightNearest = TRUE, nodesIdSelection = TRUE) 
+
+```
+
+***
+
+**How to interpret the graph?**
+
+In this network, a pair of users represents a Twitter mention relationship. That is, two users are connected to one and another if one mentions or is mentioned by the other. Using *in-degree centrality* measure, we are able to identify *influencers* in this network. Here, influencers  refer to users who are more mentioned than others. They are represented by bigger nodes.
+
+### Mobilizers in the #Imeesolusyon network based on Twitter mentions
+
+```{r}
+h5("This network consists of users who mentioned other users using the hashtag #Imeesolusyon at least once.")
+h5("There are",vcount(mt_IM_out),"users in the #Imeesolusyon network who created",ecount(mt_IM_out),"connections based on mentions." )
+
+h5("On average, users in this network mentioned other users in the same network", mean(V(mt_IM_out)$outdegree), "times.")
+h5("Kamada-Kawai layout algorithm is used for visualizing the network")
+h5("Data updated:", Sys.Date())
+
+visIgraph(mt_IM_out,idToLabel = TRUE,layout = "layout_with_kk") %>%
+  visOptions(highlightNearest = TRUE, nodesIdSelection = TRUE) 
+
+```
+
+***
+
+**How to interpret the graph?**
+
+In this network, a pair of users represents a mention relationship. That is, two users are connected to one and another if one mentions or is mentioned by the other. Using *out-degree centrality* measure, we are able to identify *mobilizers* in this network. Here, mobilizers  refer to users who more often mention other users in the network. Such users are represented by bigger nodes.
+
+
