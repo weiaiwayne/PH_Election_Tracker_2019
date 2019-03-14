@@ -16,7 +16,7 @@ library(flexdashboard)
 library(igraph)
 library(visNetwork)
 
-load(file = "mydata.rda")
+load(file = "/Users/wayne/Dropbox/Acer Laptop Sync/Data Science/PH_Election_Tracker/PH_tracker/PH_TwNetViz/mydata.rda")
 ```
 
 ### Influencers in the #OtsoDiretso network based on retweeting 

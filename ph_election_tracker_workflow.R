@@ -19,6 +19,7 @@ library(tm)
 library(textnets)
 library(tidytext)
 
+getwd()
 db <- src_sqlite("phelectiontracker_accounts.sqlite", create = FALSE) #check if the sqlite database is up to date
 df <- tbl(db, sql("SELECT * FROM tweets")) 
 df <- collect(df) 
@@ -175,6 +176,9 @@ write.csv(df_vis,"df.csv")
 write.csv(bycandidate_date,"bycandidate_date.csv")
 write.csv(t1, "t1.csv")
 write.csv(t2, "t2.csv")
+
+data <- bycandidate_date
+save(bycandidate,df, df_vis,data,t1,t2, file = "/Users/wayne/Dropbox/Acer Laptop Sync/Data Science/PH_Election_Tracker/PH_tracker/dashboard_data.rda")
 
 #remotes::install_github("JohnCoene/typed")
 #remotes::install_github("JohnCoene/baffle")
