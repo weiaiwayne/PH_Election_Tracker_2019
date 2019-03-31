@@ -24,7 +24,7 @@ db <- src_sqlite("phelectiontracker_accounts.sqlite", create = FALSE) #check if 
 df <- tbl(db, sql("SELECT * FROM tweets")) 
 df <- collect(df) 
 
-df <- df[!duplicated(df$content),] 
+df <- df[!duplicated(df$tweet_id),] 
 df<- df[df$retweeted_status !="THIS IS A RETWEET",] #focus on only RTs
 
 #filter users
@@ -75,7 +75,10 @@ df$from_user_screen_name <- as.factor(df$from_user_screen_name)
 
 #convert some character columns to integers
 df$entities_hashtags_count <- as.integer(df$entities_hashtags_count)
+
 df$entities_media_count <- as.integer(df$entities_media_count)
+df[is.na(df$entities_media_count),]$entities_media_count <- 0
+
 df$entities_mentions_count <- as.integer(df$entities_mentions_count)
 
 #get tweets since 10-01-2018
