@@ -1,0 +1,162 @@
+---
+title: "2019 Philippine General Election Plots"
+author: |
+  | [curiositybits.cc](curiositybits.cc)
+
+date: "Updated on `r Sys.Date()`"
+output: 
+ html_document:
+   toc: yes
+   code_folding: show
+   highlight: haddock
+   theme: lumen
+   toc_float: yes
+---
+```{r setup, include=FALSE}
+library(ggplot2) 
+library(prettydoc)
+library(ggthemes)
+
+load(file = "plot.rda")
+
+```
+
+## Tweet volume
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+title <- paste0("Tweet volume as of ", Sys.Date())
+
+ggplot(data = bycandidate_pc, aes(x = reorder(from_user_screen_name, value), y = value)) +
+  geom_bar(aes(fill = variable), stat = "identity") + 
+  #geom_text(aes(label=round(avg_rt, digits = 2)))+
+  xlab("Candidates") + ylab("Tweet volume") +
+  coord_flip(xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
+  geom_smooth(method = "lm", se = FALSE) +
+  scale_fill_discrete(name = "Tweet type", labels=c("tweet_count"="original tweets", "totaltweetscount_sinceoct2018"="retweets of other users"))+
+  #scale_color_fivethirtyeight("cyl") +
+  theme_fivethirtyeight()+theme(legend.position = "bottom")+ggtitle(title)
+```
+
+## # of hashtags 
+
+The figure below shows the total number of hashtags used in candidates' _original_ tweets.
+
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+title <- paste0("Hashtag count as of ", Sys.Date())
+
+ggplot(data = bycandidate, aes(x = reorder(from_user_screen_name, hashtagcount), y = hashtagcount)) +
+  geom_bar(aes(fill = from_user_screen_name), stat = "identity") + 
+  #geom_text(aes(label=round(avg_rt, digits = 2)))+
+  xlab("Candidates") + ylab("Hashtag Count") +
+  coord_flip(xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_fivethirtyeight()+theme(legend.position = "none")+ggtitle(title)
+
+```
+
+## # of Twitter mentions 
+
+The figure below shows the total number of users mentioned in candidates' _original_ tweets.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+title <- paste0("Mention count as of ", Sys.Date())
+
+ggplot(data = bycandidate, aes(x = reorder(from_user_screen_name, mentioncount), y = mentioncount)) +
+  geom_bar(aes(fill = from_user_screen_name), stat = "identity") + 
+  #geom_text(aes(label=round(avg_rt, digits = 2)))+
+  xlab("Candidates") + ylab("Mention Count") +
+  coord_flip(xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_fivethirtyeight()+theme(legend.position = "none")+ggtitle(title)
+
+```
+
+## # of images/videos
+
+The figure below shows the total number of images/videos used in candidates' _original_ tweets.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+title <- paste0("Image/video count as of ", Sys.Date())
+
+ggplot(data = bycandidate, aes(x = reorder(from_user_screen_name, multimediacount), y = multimediacount)) +
+  geom_bar(aes(fill = from_user_screen_name), stat = "identity") + 
+  #geom_text(aes(label=round(avg_rt, digits = 2)))+
+  xlab("Candidates") + ylab("Media Count") +
+  coord_flip(xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_fivethirtyeight()+theme(legend.position = "none")+ggtitle(title)
+
+```
+
+## Retweet Count
+
+The figure below shows the average number of times candidates' _original_ tweets are retweeted.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+title <- paste0("Average retweet count as of ", Sys.Date())
+
+ggplot(data = bycandidate, aes(x = reorder(from_user_screen_name, avg_rt), y = avg_rt)) +
+  geom_bar(aes(fill = from_user_screen_name), stat = "identity") + 
+  #geom_text(aes(label=round(avg_rt, digits = 2)))+
+  xlab("Candidates") + ylab("Average Retweet Count") +
+  coord_flip(xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_fivethirtyeight()+theme(legend.position = "none")+ggtitle(title)
+
+```
+
+## Average Favorite Count
+
+The figure below shows the average number of times candidates' _original_ tweets are favorited.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+
+title <- paste0("Average favorite count as of ", Sys.Date())
+
+ggplot(data = bycandidate, aes(x = reorder(from_user_screen_name, avg_fav), y = avg_fav)) +
+  geom_bar(aes(fill = from_user_screen_name), stat = "identity") + 
+  #geom_text(aes(label=round(avg_rt, digits = 2)))+
+  xlab("Candidates") + ylab("Average Favorite Count") +
+  coord_flip(xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_fivethirtyeight()+theme(legend.position = "none")+ggtitle(title)
+
+```
+
+## Follower count
+
+The figure below shows the number of followers each candidate has.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+title <- paste0("Follower count as of ", Sys.Date())
+
+ggplot(data = bycandidate, aes(x = reorder(from_user_screen_name, followercount), y = followercount)) +
+  geom_bar(aes(fill = from_user_screen_name), stat = "identity") + 
+  #geom_text(aes(label=round(avg_rt, digits = 2)))+
+  xlab("Candidates") + ylab("Follower Count") +
+  coord_flip(xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_fivethirtyeight()+theme(legend.position = "none")+ggtitle(title)
+
+```
+
+## Friend count
+
+The figure below shows the number of users a candidate is following on Twitterh.
+
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+title <- paste0("Friend count as of ", Sys.Date())
+
+ggplot(data = bycandidate, aes(x = reorder(from_user_screen_name, friendcount), y = friendcount)) +
+  geom_bar(aes(fill = from_user_screen_name), stat = "identity") + 
+  #geom_text(aes(label=round(avg_rt, digits = 2)))+
+  xlab("Candidates") + ylab("Friend Count") +
+  coord_flip(xlim = NULL, ylim = NULL, expand = TRUE, clip = "on") +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_fivethirtyeight()+theme(legend.position = "none")+ggtitle(title)
+
+```
+
+
+
