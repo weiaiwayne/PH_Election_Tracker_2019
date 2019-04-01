@@ -67,7 +67,7 @@ edges <- function(net){
   return(edges)
 }
 
-subnet_in <- function(edgelist, nodes,k){
+subnet_in <- function(edgelist, nodes){
   
   edgelist <- edgelist[,c("source","target","size")]
   nodes <- nodes[,c("label","id","size")]
@@ -87,15 +87,16 @@ subnet_in <- function(edgelist, nodes,k){
   #bt <- betweenness(n1, directed=T, weights=NA)
   #degree <- degree(n1,mode = "all")
   indegree <- degree(n1,mode = "in")
-  
   #k <- induced_subgraph(n1, kcore>=k)
-  k <- induced_subgraph(n1, indegree>=k)
-  V(k)$size <- (V(k)$size)/2
+  in_rank <- sort(degree(n1,mode = "in"),decreasing = TRUE)
+  rank <- as.numeric(in_rank[20])
+  k <- induced_subgraph(n1, indegree>=rank)
+  V(k)$size <- (V(k)$size)/4
   
   return(k)
 }
 
-subnet_out <- function(edgelist, nodes,k){
+subnet_out <- function(edgelist, nodes){
   
   edgelist <- edgelist[,c("source","target","size")]
   nodes <- nodes[,c("label","id","size")]
@@ -111,8 +112,10 @@ subnet_out <- function(edgelist, nodes,k){
   outdegree <- degree(n1,mode = "out")
   
   #k <- induced_subgraph(n1, kcore>=k)
-  k <- induced_subgraph(n1, outdegree>=k)
-  V(k)$size <- (V(k)$size)
+  out_rank <- sort(degree(n1,mode = "out"),decreasing = TRUE)
+  rank <- as.numeric(out_rank[20])
+  k <- induced_subgraph(n1, outdegree>=rank)
+  V(k)$size <- (V(k)$size)/4
   
   return(k)
 }
@@ -154,15 +157,15 @@ edges_IM_rt <- edges(IM_rt)
 nodes_IM_mt <- nodes(IM_mt)
 edges_IM_mt <- edges(IM_mt)
 
-rt_OD_in <- subnet_in(edges_OD_rt, nodes_OD_rt, 1)
-rt_OD_out <- subnet_out(edges_OD_rt, nodes_OD_rt, 1)
-mt_OD_in <- subnet_in(edges_OD_mt, nodes_OD_mt, 1)
-mt_OD_out <- subnet_out(edges_OD_mt, nodes_OD_mt, 1)
+rt_OD_in <- subnet_in(edges_OD_rt, nodes_OD_rt)
+rt_OD_out <- subnet_out(edges_OD_rt, nodes_OD_rt)
+mt_OD_in <- subnet_in(edges_OD_mt, nodes_OD_mt)
+mt_OD_out <- subnet_out(edges_OD_mt, nodes_OD_mt)
 
-rt_IM_in <- subnet_in(edges_IM_rt, nodes_IM_rt, 1)
-rt_IM_out <- subnet_out(edges_IM_rt, nodes_IM_rt, 1)
-mt_IM_in <- subnet_in(edges_IM_mt, nodes_IM_mt, 1)
-mt_IM_out <- subnet_out(edges_IM_mt, nodes_IM_mt, 1)
+rt_IM_in <- subnet_in(edges_IM_rt, nodes_IM_rt)
+rt_IM_out <- subnet_out(edges_IM_rt, nodes_IM_rt)
+mt_IM_in <- subnet_in(edges_IM_mt, nodes_IM_mt)
+mt_IM_out <- subnet_out(edges_IM_mt, nodes_IM_mt)
 
 visIgraph(rt_IM_in,idToLabel = TRUE,layout = "layout_nicely") %>%
   visOptions(highlightNearest = TRUE, nodesIdSelection = TRUE) 
@@ -181,3 +184,4 @@ save(mt_IM_in, file="mt_IM_in.RData")
 
 getwd()
 save(rt_OD_in,rt_OD_out, mt_OD_in,mt_OD_out,rt_IM_in,rt_IM_out, mt_IM_in,mt_IM_out, file = "/Users/wayne/Dropbox/Acer Laptop Sync/Data Science/PH_Election_Tracker/PH_tracker/PH_TwNetViz/mydata.rda")
+
